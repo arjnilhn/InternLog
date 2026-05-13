@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - InternLog</title>
+</head>
+<body>
+    <h1>Welcome, {{ session['username'] }}!</h1>
+    <p>Total Internship Days: <strong>{{ total_days }}</strong></p>
+    <hr>
+    <a href="/create">Add New Log Entry</a> | <a href="/logout">Logout</a>
+    <hr>
+    <h2>Your Internship Logs</h2>
+    <ul>
+        {% for log in logs %}
+            <li>
+                <strong>{{ log['title'] }}</strong> - <small>{{ log['created_at'] }}</small>
+                <p>{{ log['content'] }}</p>
+                <hr>
+            </li>
+        {% else %}
+            <p>No logs found. Start by adding your first entry!</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>

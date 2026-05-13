@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Log - InternLog</title>
+</head>
+<body>
+    <h1>Create Daily Log Entry</h1>
+    <hr>
+    <form action="/create" method="POST">
+        <div>
+            <label>Title:</label><br>
+            <input type="text" name="title" required placeholder="Day 1: Introduction">
+        </div>
+        <br>
+        <div>
+            <label>Content:</label><br>
+            <textarea name="content" rows="10" cols="50" required placeholder="What did you learn today?"></textarea>
+        </div>
+        <br>
+        <button type="submit">Save Log Entry</button>
+    </form>
+    <br>
+    <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>
