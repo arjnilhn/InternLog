@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, render_template, request, redirect, session, url_for, flash # flash 
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here' # Session güvenliği için şart [cite: 20]
@@ -24,12 +26,12 @@ def register():
         username = request.form['username']
         password = request.form['password']
         
-        # Şifreyi hash'liyoruz (Güvenlik için çok kritik!) [cite: 1426, 1427]
+        # Şifreyi hash'liyoruz (Güvenlik için) [cite: 1426, 1427]
         hashed_password = generate_password_hash(password)
         
         try:
             conn = get_db_connection()
-            # Raw SQL kullanıyoruz, ORM yasak! [cite: 26]
+            
             conn.execute('INSERT INTO users (username, password) VALUES (?, ?)',
                          (username, hashed_password))
             conn.commit()
@@ -39,6 +41,7 @@ def register():
             return "Username already exists!"
             
     return render_template('register.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -46,35 +49,39 @@ def login():
         password = request.form['password']
         
         conn = get_db_connection()
-        # Raw SQL ile kullanıcıyı buluyoruz [cite: 26]
         user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
         conn.close()
         
-        # Şifre kontrolü (werkzeug ile hash kontrolü yapıyoruz)
         if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id'] # Session'a kullanıcı id'sini kaydediyoruz [cite: 20, 21]
+            session['user_id'] = user['id']
             session['username'] = user['username']
+            flash('Successfully logged in!', 'success')
             return redirect(url_for('dashboard'))
         else:
-            return "Invalid username or password"
+            # KRİTİK NOKTA: Dashboard'a gitmiyoruz, tekrar login sayfasına yönlendiriyoruz
+            flash('Invalid username or password', 'danger')
+            return redirect(url_for('login')) # Seni login sayfasına geri atar ve mesajı gösterir
             
     return render_template('login.html')
-
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    search_query = request.args.get('search', '') # Arama terimini al
     conn = get_db_connection()
-    # Sadece giriş yapan kullanıcının günlüklerini getiriyoruz [cite: 21, 29]
-    logs = conn.execute('SELECT * FROM logs WHERE user_id = ? ORDER BY created_at DESC', 
-                        (session['user_id'],)).fetchall()
     
-    # İş mantığı: Toplam staj gün sayısını hesapla (US3 için)
-    total_days = len(logs) 
+    if search_query:
+        # Arama terimi varsa filtrele
+        query = "SELECT * FROM logs WHERE user_id = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC"
+        logs = conn.execute(query, (session['user_id'], f'%{search_query}%', f'%{search_query}%')).fetchall()
+    else:
+        # Yoksa hepsini getir
+        logs = conn.execute('SELECT * FROM logs WHERE user_id = ? ORDER BY created_at DESC', (session['user_id'],)).fetchall()
     
+    total_days = len(logs)
     conn.close()
-    return render_template('dashboard.html', logs=logs, total_days=total_days)
+    return render_template('dashboard.html', logs=logs, total_days=total_days, search_query=search_query)
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_log():
@@ -94,7 +101,11 @@ def create_log():
                      (session['user_id'], title, content))
         conn.commit()
         conn.close()
-        return redirect(url_for('dashboard'))
+            # create
+        flash('New internship log added!', 'success')
+       
+        return redirect(url_for('dashboard')) 
+    
         
     return render_template('create_log.html')
 
@@ -105,10 +116,12 @@ def delete_log(log_id):
         return redirect(url_for('login'))
         
     conn = get_db_connection()
-    # Güvenlik Kontrolü: Sadece kendi kaydını silebilirsin!
+    # Güvenlik Kontrolü: Sadece kendi kaydını silebilir
     conn.execute('DELETE FROM logs WHERE id = ? AND user_id = ?', (log_id, session['user_id']))
     conn.commit()
     conn.close()
+     # delete
+    flash('Log entry deleted successfully!', 'info')
     return redirect(url_for('dashboard'))
 
 # EDIT - Kayıt Düzenleme
@@ -137,8 +150,29 @@ def edit_log(log_id):
 # Logout - Oturumu sonlandırma 
 @app.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('login'))
+    session.clear() # Tüm oturum bilgilerini temizler
+    flash('You have been logged out.', 'info') # Mesajı sıraya ekler
+    return redirect(url_for('login')) # Mesajın görüneceği sayfaya gönderir
+
+@app.route('/export')
+def export_logs():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    logs = conn.execute('SELECT * FROM logs WHERE user_id = ? ORDER BY created_at ASC', (session['user_id'],)).fetchall()
+    conn.close()
+    
+    output = f"INTERNSHIP LOG REPORT - User: {session['username']}\n"
+    output += "="*40 + "\n\n"
+    
+    for log in logs:
+        output += f"Date: {log['created_at']}\nTitle: {log['title']}\nContent: {log['content']}\n"
+        output += "-"*20 + "\n"
+        
+    # Dosya olarak indirmeyi sağlayan Response ayarı
+    from flask import Response
+    return Response(output, mimetype="text/plain", headers={"Content-disposition": "attachment; filename=internship_report.txt"})
 
 if __name__ == "__main__":
     app.run(debug=True)

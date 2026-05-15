@@ -17,6 +17,15 @@
                     <h2 class="fw-bold text-primary">InternLog 🚀</h2>
                     <p class="text-muted">Welcome back! Please login.</p>
                 </div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }} shadow-sm mb-3">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
                 <form action="/login" method="POST">
                     <div class="form-floating mb-3">
                         <input type="text" name="username" class="form-control" id="u" placeholder="Username" required>
@@ -38,4 +47,3 @@
 
 </body>
 </html>
-
