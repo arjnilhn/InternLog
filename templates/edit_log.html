@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Log - InternLog</title>
+</head>
+<body>
+    <h1>Edit Log Entry</h1>
+    <hr>
+    <form method="POST">
+        <div>
+            <label>Title:</label><br>
+            <input type="text" name="title" value="{{ log['title'] }}" required>
+        </div>
+        <br>
+        <div>
+            <label>Content:</label><br>
+            <textarea name="content" rows="10" cols="50" required>{{ log['content'] }}</textarea>
+        </div>
+        <br>
+        <button type="submit">Update Log</button>
+    </form>
+    <br>
+    <a href="/dashboard">Cancel</a>
+</body>
+</html>

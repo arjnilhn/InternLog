@@ -98,6 +98,42 @@ def create_log():
         
     return render_template('create_log.html')
 
+# DELETE - Kayıt Silme
+@app.route('/delete/<int:log_id>')
+def delete_log(log_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    # Güvenlik Kontrolü: Sadece kendi kaydını silebilirsin!
+    conn.execute('DELETE FROM logs WHERE id = ? AND user_id = ?', (log_id, session['user_id']))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('dashboard'))
+
+# EDIT - Kayıt Düzenleme
+@app.route('/edit/<int:log_id>', methods=['GET', 'POST'])
+def edit_log(log_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    # Önce düzenlenecek kaydı bulalım
+    log = conn.execute('SELECT * FROM logs WHERE id = ? AND user_id = ?', (log_id, session['user_id'])).fetchone()
+    
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        
+        conn.execute('UPDATE logs SET title = ?, content = ? WHERE id = ? AND user_id = ?',
+                     (title, content, log_id, session['user_id']))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('dashboard'))
+        
+    conn.close()
+    return render_template('edit_log.html', log=log)
+
 # Logout - Oturumu sonlandırma 
 @app.route('/logout')
 def logout():

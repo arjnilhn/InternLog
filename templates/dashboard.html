@@ -13,9 +13,12 @@
     <h2>Your Internship Logs</h2>
     <ul>
         {% for log in logs %}
+    
             <li>
                 <strong>{{ log['title'] }}</strong> - <small>{{ log['created_at'] }}</small>
                 <p>{{ log['content'] }}</p>
+                <a href="/edit/{{ log['id'] }}">Edit</a> | 
+                <a href="/delete/{{ log['id'] }}" onclick="return confirm('Are you sure?')">Delete</a>
                 <hr>
             </li>
         {% else %}
