@@ -173,6 +173,40 @@ def export_logs():
     # Dosya olarak indirmeyi sağlayan Response ayarı
     from flask import Response
     return Response(output, mimetype="text/plain", headers={"Content-disposition": "attachment; filename=internship_report.txt"})
-
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        conn = get_db_connection()
+        user = conn.execute('SELECT password FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        
+        # 1. Mevcut şifre kontrolü
+        if not check_password_hash(user['password'], old_password):
+            flash('Current password is incorrect!', 'danger')
+            conn.close()
+        # 2. Yeni şifrelerin eşleşme kontrolü
+        elif new_password != confirm_password:
+            flash('New passwords do not match!', 'danger')
+            conn.close()
+        # 3. Boş şifre kontrolü
+        elif not new_password:
+            flash('New password cannot be empty!', 'danger')
+            conn.close()
+        else:
+            # Her şey yolunda, şifreyi güncelle
+            hashed_password = generate_password_hash(new_password)
+            conn.execute('UPDATE users SET password = ? WHERE id = ?', (hashed_password, session['user_id']))
+            conn.commit()
+            conn.close()
+            flash('Your password has been updated successfully!', 'success')
+            return redirect(url_for('profile'))
+            
+    return render_template('profile.html')
 if __name__ == "__main__":
     app.run(debug=True)
