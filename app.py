@@ -6,6 +6,15 @@ from flask import Flask, render_template, request, redirect, session, url_for, f
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here' # Session güvenliği için şart [cite: 20]
+from functools import wraps
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Veritabanı bağlantı yardımcısı
 def get_db_connection():
@@ -63,25 +72,7 @@ def login():
             return redirect(url_for('login')) # Seni login sayfasına geri atar ve mesajı gösterir
             
     return render_template('login.html')
-@app.route('/dashboard')
-def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    search_query = request.args.get('search', '') # Arama terimini al
-    conn = get_db_connection()
-    
-    if search_query:
-        # Arama terimi varsa filtrele
-        query = "SELECT * FROM logs WHERE user_id = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC"
-        logs = conn.execute(query, (session['user_id'], f'%{search_query}%', f'%{search_query}%')).fetchall()
-    else:
-        # Yoksa hepsini getir
-        logs = conn.execute('SELECT * FROM logs WHERE user_id = ? ORDER BY created_at DESC', (session['user_id'],)).fetchall()
-    
-    total_days = len(logs)
-    conn.close()
-    return render_template('dashboard.html', logs=logs, total_days=total_days, search_query=search_query)
+
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_log():
@@ -208,5 +199,61 @@ def profile():
             return redirect(url_for('profile'))
             
     return render_template('profile.html')
+ 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    # 1. Arama terimini URL'den alıyoruz (Giriş: ?search=...)
+    search_query = request.args.get('search', '') 
+    
+    conn = get_db_connection()
+    
+    # 2. Kullanıcı bilgilerini çekiyoruz (Staj adı ve toplam gün için)
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    
+    # 3. Logları Çekme (Eğer arama varsa filtrele, yoksa hepsini getir)
+    if search_query:
+        query = "SELECT * FROM logs WHERE user_id = ? AND (title LIKE ? OR content LIKE ?) ORDER BY created_at DESC"
+        logs = conn.execute(query, (session['user_id'], f'%{search_query}%', f'%{search_query}%')).fetchall()
+    else:
+        logs = conn.execute('SELECT * FROM logs WHERE user_id = ? ORDER BY created_at DESC', (session['user_id'],)).fetchall()
+    
+    # 4. İstatistik Hesaplamaları
+    total = user['total_days'] if user['total_days'] else 20
+    title = user['internship_name'] if user['internship_name'] else "My Internship"
+    completed = len(logs)
+    remaining = total - completed if (total - completed) > 0 else 0
+    
+    conn.close()
+    
+    # 5. Her şeyi Template'e gönderiyoruz (Arama kutusunun içi boş kalmasın diye search_query'yi de yolluyoruz)
+    return render_template('dashboard.html', 
+                           logs=logs, 
+                           remaining=remaining, 
+                           total=total, 
+                           title=title, 
+                           completed=completed,
+                           search_query=search_query)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    conn = get_db_connection()
+    if request.method == 'POST':
+        name = request.form['internship_name']
+        days = request.form['total_days']
+        
+        # Veritabanındaki internship_name ve total_days sütunlarını günceller
+        conn.execute('UPDATE users SET internship_name = ?, total_days = ? WHERE id = ?', 
+                     (name, days, session['user_id']))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('dashboard'))
+    
+    # Sayfa ilk açıldığında mevcut bilgileri kutucuklara doldurur
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    conn.close()
+    return render_template('settings.html', user=user)
+
 if __name__ == "__main__":
     app.run(debug=True)
