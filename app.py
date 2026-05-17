@@ -100,19 +100,17 @@ def create_log():
         
     return render_template('create_log.html')
 
-# DELETE - Kayıt Silme
-@app.route('/delete/<int:log_id>')
+@app.route('/delete/<int:log_id>', methods=['POST'])
+@login_required
 def delete_log(log_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-        
     conn = get_db_connection()
-    # Güvenlik Kontrolü: Sadece kendi kaydını silebilir
     conn.execute('DELETE FROM logs WHERE id = ? AND user_id = ?', (log_id, session['user_id']))
     conn.commit()
     conn.close()
-     # delete
-    flash('Log entry deleted successfully!', 'info')
+    
+    # Kullanıcıya gidecek mesaj burada:
+    flash('Log entry successfully deleted!', 'success') 
+    
     return redirect(url_for('dashboard'))
 
 # EDIT - Kayıt Düzenleme
