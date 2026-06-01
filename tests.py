@@ -3,12 +3,12 @@ import sqlite3
 
 class TestInternLogBusinessLogic(unittest.TestCase):
     def setUp(self):
-        # Set up an isolated, temporary database in RAM for clean testing [cite: 27]
+        # Set up an isolated, temporary database in RAM for clean testing 
         self.conn = sqlite3.connect(':memory:')
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         
-        # Initialize tables required by the system scope [cite: 27]
+        # Initialize tables required by the system scope 
         self.cursor.execute('''
             CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,28 +33,28 @@ class TestInternLogBusinessLogic(unittest.TestCase):
         self.conn.close()
 
     def test_user_data_isolation_logic(self):
-        # US2: Verify that users can only fetch their own logs [cite: 21, 30]
+        # US2: Verify that users can only fetch their own logs 
         self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Zeynep",))
         user1_id = self.cursor.lastrowid
         self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("OtherIntern",))
         user2_id = self.cursor.lastrowid
         
-        # Insert a log entry belonging specifically to user 1 [cite: 29]
+        # Insert a log entry belonging specifically to user
         self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", 
                             (user1_id, "Day 1 Log", "Worked on backend modules."))
         self.conn.commit()
         
-        # Execute queries scoped by user_id to simulate session isolation [cite: 20, 29]
+        # Execute queries scoped by user_id to simulate session isolation 
         user1_logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user1_id,)).fetchall()
         user2_logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user2_id,)).fetchall()
         
-        # Assertions to validate explicit multi-user data boundary [cite: 21]
+        # Assertions to validate explicit multi-user data boundary
         self.assertEqual(len(user1_logs), 1)
         self.assertEqual(user1_logs[0]['title'], "Day 1 Log")
         self.assertEqual(len(user2_logs), 0)
 
     def test_progress_calculation_logic(self):
-        # US3: Verify the internal counting logic for progress indicators [cite: 30]
+        # US3: Verify the internal counting logic for progress indicators 
         self.cursor.execute("INSERT INTO users (username, total_days) VALUES (?, ?)", ("Zeynep", 30))
         user_id = self.cursor.lastrowid
         
@@ -71,7 +71,7 @@ class TestInternLogBusinessLogic(unittest.TestCase):
         self.assertEqual(completed, 2)
 
     def test_unauthorized_deletion_protection(self):
-        # US4: Ensure cross-user data tampering via raw SQL manipulation is blocked [cite: 26, 30]
+        # US4: Ensure cross-user data tampering via raw SQL manipulation is blocked
         self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Zeynep",))
         zeynep_id = self.cursor.lastrowid
         self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Hacker",))
@@ -83,33 +83,33 @@ class TestInternLogBusinessLogic(unittest.TestCase):
         self.conn.commit()
         log_id = self.cursor.lastrowid
 
-        # Malicious user attempts to execute a hard delete query using wrong ownership criteria [cite: 21, 26]
+        # Malicious user attempts to execute a hard delete query using wrong ownership criteria 
         self.cursor.execute('DELETE FROM logs WHERE id = ? AND user_id = ?', (log_id, hacker_id))
         self.conn.commit()
 
-        # The rowcount must be 0 because query clauses do not match the real owner [cite: 21]
+        # The rowcount must be 0 because query clauses do not match the real owner 
         self.assertEqual(self.cursor.rowcount, 0)
         
-        # Double check the original record remains uncorrupted in the database [cite: 21]
+        # Double check the original record remains uncorrupted in the database 
         existing_log = self.cursor.execute('SELECT * FROM logs WHERE id = ?', (log_id,)).fetchone()
         self.assertIsNotNone(existing_log)
 
     def test_input_sanitization_and_whitespace_trimming(self):
-        # US1: Verify standard input handling rules before executing raw persistence operations [cite: 26, 30]
+        # US1: Verify standard input handling rules before executing raw persistence operations
         raw_title = "   Day 3: API Integration   "
         raw_content = "<script>alert('XSS')</script> Solved core bugs."
 
-        # Apply basic cleaning procedures locally [cite: 17]
+        # Apply basic cleaning procedures locally 
         clean_title = raw_title.strip()
         clean_content = raw_content.replace("<script>", "").replace("</script>", "")
 
-        # Persist cleansed attributes to the database [cite: 26]
+        # Persist cleansed attributes to the database 
         self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", 
                             (1, clean_title, clean_content))
         self.conn.commit()
         log_id = self.cursor.lastrowid
 
-        # Retrieve verified parameters from database rows [cite: 26]
+        # Retrieve verified parameters from database rows 
         saved_log = self.cursor.execute('SELECT * FROM logs WHERE id = ?', (log_id,)).fetchone()
         
         # Assert clean strings match our system's core sanitation targets

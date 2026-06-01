@@ -1,7 +1,7 @@
 /* static/style.css */
 :root {
-    --primary-color: #4a90e2;
-    --bg-color: #f4f7f6;
+    --primary-color: #e897c8;
+    --bg-color: #deb7da;
     --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
@@ -22,7 +22,7 @@ body {
 }
 
 .navbar {
-    background-color: white !important;
+    background-color: rgb(210, 142, 174) !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 

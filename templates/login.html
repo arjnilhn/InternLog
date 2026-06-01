@@ -5,7 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - InternLog</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --primary-color: #e897c8;      /* Beğendiğin o güzel pembe buton tonu */
+            --primary-dark: #b54f8e;       /* Yazılar ve linkler için okunabilir koyu pembe */
+        }
+
+        body {
+            background-color: #f8f9fa !important; /* Giriş sayfasının o temiz arka planı */
+        }
+
+        /* Giriş Kartı Özelleştirmesi */
+        .card {
+            border: none !important;
+            border-radius: 20px !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        /* soft pembe alert kutusu */
+        .alert-info, .alert {
+            background-color: rgba(232, 151, 200, 0.12) !important;
+            color: var(--primary-dark) !important;
+            border: 1px solid rgba(232, 151, 200, 0.2) !important;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Form Elemanları ve Tıklayınca Çıkan Soft Efekt */
+        .form-control {
+            border-radius: 12px !important;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 0.25rem rgba(232, 151, 200, 0.15) !important;
+        }
+
+        /* Buton Tasarımı */
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            border-radius: 12px !important;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #d63384 !important;
+            border-color: #d63384 !important;
+        }
+
+        /* Link Tasarımı */
+        .text-primary, .text-decoration-none {
+            color: #0d6efd !important; 
+        }
+        .text-decoration-none:hover {
+            text-decoration: underline !important;
+        }
+    </style>
 </head>
 <body class="d-flex align-items-center py-4 bg-light" style="min-height: 100vh;">
 
@@ -14,14 +71,16 @@
         <div class="col-md-5 col-lg-4">
             <div class="card shadow-lg p-4">
                 <div class="text-center mb-4">
-                    <h2 class="fw-bold text-primary">InternLog 🚀</h2>
+                    <h2 class="fw-bold" style="color: var(--primary-dark);">InternLog 🚀✨</h2>
                     <p class="text-muted">Welcome back! Please login.</p>
                 </div>
                 
                 {% with messages = get_flashed_messages(with_categories=true) %}
                   {% if messages %}
                     {% for category, message in messages %}
-                      <div class="alert alert-{{ category }} shadow-sm mb-3">{{ message }}</div>
+                      <div class="alert shadow-sm mb-3 border-0">
+                          <i class="fas fa-info-circle me-2"></i>{{ message }}
+                      </div>
                     {% endfor %}
                   {% endif %}
                 {% endwith %}
@@ -35,7 +94,7 @@
                         <input type="password" name="password" class="form-control" id="p" placeholder="Password" required>
                         <label for="p">Password</label>
                     </div>
-                    <button class="btn btn-primary w-100 py-2 fw-bold shadow-sm" type="submit">Login</button>
+                    <button class="btn btn-primary w-100 py-3 fw-bold shadow-sm" type="submit">Login</button>
                 </form>
                 <div class="text-center mt-4">
                     <p class="small text-muted">Don't have an account? <a href="/register" class="text-decoration-none">Register here</a></p>

@@ -2,16 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Settings - InternLog</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --primary-color: #e897c8;      /* Dashboard ile uyumlu ana pembe */
+            --primary-dark: #b54f8e;       /* Başlıklar ve linkler için koyu pembe */
+            --bg-color: #ffffff;           /* Ferah bembeyaz arka plan */
+            --card-bg: #fdf8fb;            /* Hafif pudra form kutusu */
+            --card-shadow: 0 4px 20px rgba(232, 151, 200, 0.08);
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            font-family: 'Inter', sans-serif;
+            color: #4a4a4a;
+        }
+
+        /* Navbar Styling */
+        .navbar { 
+            background-color: #ffffff !important; 
+            border-bottom: 1px solid rgba(232, 151, 200, 0.2) !important; 
+        }
+
+        /* Form Card Layout */
+        .card { 
+            background-color: var(--card-bg) !important;
+            border: 1px solid rgba(232, 151, 200, 0.15) !important; 
+            border-radius: 16px; 
+            box-shadow: var(--card-shadow); 
+        }
+
+        /* Soft Alert Boxes */
+        .alert {
+            background-color: rgba(232, 151, 200, 0.12) !important;
+            color: var(--primary-dark) !important;
+            border: 1px solid rgba(232, 151, 200, 0.2) !important;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* Input Custom Styling & Soft Focus Effect */
+        .form-control {
+            border: 1px solid rgba(232, 151, 200, 0.15) !important;
+            background-color: #ffffff !important;
+            border-radius: 10px;
+            padding: 10px 15px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control:focus { 
+            border-color: var(--primary-color) !important; 
+            box-shadow: 0 0 0 0.25rem rgba(232, 151, 200, 0.15) !important; 
+        }
+
+        /* Buttons & Actions */
+        .btn-primary { 
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: #ffffff !important;
+            border-radius: 10px; 
+            font-weight: 600;
+            padding: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #d63384 !important;
+            border-color: #d63384 !important;
+        }
+
+        /* Navigation Links */
+        .back-link {
+            color: var(--primary-dark) !important;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: #d63384 !important;
+            text-decoration: underline !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+    
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-5 py-3">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="/dashboard">InternLog 🚀</a>
+            <a class="navbar-brand fw-bold back-link" href="/dashboard" style="color: var(--primary-color) !important;">InternLog 🚀✨</a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/dashboard">Back to Dashboard</a>
+                <a class="nav-link back-link" href="/dashboard"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
             </div>
         </div>
     </nav>
@@ -19,44 +103,46 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <div class="card shadow-sm p-4">
-                    <h3 class="fw-bold mb-4">Profile Settings</h3>
+                <div class="card shadow-sm p-4 p-md-5">
+                    <h3 class="fw-bold mb-4" style="color: #444;">Profile Settings</h3>
                     
                     {% with messages = get_flashed_messages(with_categories=true) %}
                       {% if messages %}
                         {% for category, message in messages %}
-                          <div class="alert alert-{{ category }}">{{ message }}</div>
+                          <div class="alert shadow-sm mb-3 border-0">
+                              <i class="fas fa-bell me-2"></i>{{ message }}
+                          </div>
                         {% endfor %}
                       {% endif %}
                     {% endwith %}
 
                     <div class="mb-4">
-                        <label class="text-muted small uppercase">Username</label>
-                        <p class="fs-5 fw-bold">{{ session['username'] }}</p>
+                        <label class="text-muted small text-uppercase fw-bold" style="letter-spacing: 0.5px; color: var(--primary-dark) !important;">Username</label>
+                        <p class="fs-4 fw-bold text-dark mt-1" style="opacity: 0.85;">{{ session['username'] }}</p>
                     </div>
 
-                    <hr>
+                    <hr style="border-color: rgba(232, 151, 200, 0.2); margin: 25px 0;">
 
-                 <form action="/profile" method="POST">
-    <h5 class="mb-3">Change Password</h5>
-    
-    <div class="mb-3">
-        <label class="form-label">Current Password</label>
-        <input type="password" name="old_password" class="form-control" placeholder="Enter your current password" required>
-    </div>
-    
-    <hr>
-    
-    <div class="mb-3">
-        <label class="form-label">New Password</label>
-        <input type="password" name="new_password" class="form-control" placeholder="Enter new password" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Confirm New Password</label>
-        <input type="password" name="confirm_password" class="form-control" placeholder="Repeat new password" required>
-    </div>
-    <button type="submit" class="btn btn-primary w-100">Update Password</button>
-</form>
+                    <form action="/profile" method="POST">
+                        <h5 class="mb-3 fw-bold" style="color: #555;">Change Password</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold" style="color: #666;">Current Password</label>
+                            <input type="password" name="old_password" class="form-control" placeholder="Enter your current password" required>
+                        </div>
+                        
+                        <hr style="border-color: rgba(232, 151, 200, 0.1); margin: 20px 0;">
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold" style="color: #666;">New Password</label>
+                            <input type="password" name="new_password" class="form-control" placeholder="Enter new password" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold" style="color: #666;">Confirm New Password</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="Repeat new password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">Update Password</button>
+                    </form>
                 </div>
             </div>
         </div>
