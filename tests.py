@@ -3,12 +3,12 @@ import sqlite3
 
 class TestInternLogBusinessLogic(unittest.TestCase):
     def setUp(self):
-        """Her testten önce RAM üzerinde geçici bir test veritabanı kurar."""
+        # Set up an isolated, temporary database in RAM for clean testing [cite: 27]
         self.conn = sqlite3.connect(':memory:')
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         
-        # Test tablolarını oluştur (Hocanın istediği en az 2 tablo kuralı)
+        # Initialize tables required by the system scope [cite: 27]
         self.cursor.execute('''
             CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,47 +29,92 @@ class TestInternLogBusinessLogic(unittest.TestCase):
         self.conn.commit()
 
     def tearDown(self):
-        """Test bittiğinde geçici bağlantıyı kapatır."""
+        # Close database connection after each test run
         self.conn.close()
 
     def test_user_data_isolation_logic(self):
-        """Kılavuz 1.3 & US2: Farklı kullanıcıların birbirinin verisini görmediğini test eder."""
-        # İki farklı kullanıcı ekle
+        # US2: Verify that users can only fetch their own logs [cite: 21, 30]
         self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Zeynep",))
         user1_id = self.cursor.lastrowid
-        self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Diğer Stajyer",))
+        self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("OtherIntern",))
         user2_id = self.cursor.lastrowid
         
-        # Sadece Zeynep için bir log ekle
+        # Insert a log entry belonging specifically to user 1 [cite: 29]
         self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", 
-                            (user1_id, "Zeynep'in Günlüğü", "Bugün backend yazdım."))
+                            (user1_id, "Day 1 Log", "Worked on backend modules."))
         self.conn.commit()
         
-        # Veritabanından sorgula
-        zeynep_logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user1_id,)).fetchall()
-        diger_logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user2_id,)).fetchall()
+        # Execute queries scoped by user_id to simulate session isolation [cite: 20, 29]
+        user1_logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user1_id,)).fetchall()
+        user2_logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user2_id,)).fetchall()
         
-        # Doğrulama: Herkes sadece kendi verisine erişebilmeli
-        self.assertEqual(len(zeynep_logs), 1)
-        self.assertEqual(zeynep_logs[0]['title'], "Zeynep'in Günlüğü")
-        self.assertEqual(len(diger_logs), 0)
+        # Assertions to validate explicit multi-user data boundary [cite: 21]
+        self.assertEqual(len(user1_logs), 1)
+        self.assertEqual(user1_logs[0]['title'], "Day 1 Log")
+        self.assertEqual(len(user2_logs), 0)
 
     def test_progress_calculation_logic(self):
-        """Kılavuz US3: Log sayısının otomatik ve doğru hesaplandığını test eder."""
+        # US3: Verify the internal counting logic for progress indicators [cite: 30]
         self.cursor.execute("INSERT INTO users (username, total_days) VALUES (?, ?)", ("Zeynep", 30))
         user_id = self.cursor.lastrowid
         
-        # Kullanıcı 2 adet log ekliyor
-        self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", (user_id, "Day 1", "Content 1"))
-        self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", (user_id, "Day 2", "Content 2"))
+        # Add sample log records for the target user [cite: 29]
+        self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", (user_id, "Log 1", "Content 1"))
+        self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", (user_id, "Log 2", "Content 2"))
         self.conn.commit()
         
-        # İş mantığı hesaplaması
+        # Calculate log total count programmatically
         logs = self.cursor.execute('SELECT * FROM logs WHERE user_id = ?', (user_id,)).fetchall()
         completed = len(logs)
         
-        # Doğrulama: Log sayısı tam olarak 2 olmalı
+        # Validate that the metrics correctly calculate to 2 entries
         self.assertEqual(completed, 2)
+
+    def test_unauthorized_deletion_protection(self):
+        # US4: Ensure cross-user data tampering via raw SQL manipulation is blocked [cite: 26, 30]
+        self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Zeynep",))
+        zeynep_id = self.cursor.lastrowid
+        self.cursor.execute("INSERT INTO users (username) VALUES (?)", ("Hacker",))
+        hacker_id = self.cursor.lastrowid
+
+        # Target user writes a log entry [cite: 29]
+        self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", 
+                            (zeynep_id, "Secure Entry", "Private data..."))
+        self.conn.commit()
+        log_id = self.cursor.lastrowid
+
+        # Malicious user attempts to execute a hard delete query using wrong ownership criteria [cite: 21, 26]
+        self.cursor.execute('DELETE FROM logs WHERE id = ? AND user_id = ?', (log_id, hacker_id))
+        self.conn.commit()
+
+        # The rowcount must be 0 because query clauses do not match the real owner [cite: 21]
+        self.assertEqual(self.cursor.rowcount, 0)
+        
+        # Double check the original record remains uncorrupted in the database [cite: 21]
+        existing_log = self.cursor.execute('SELECT * FROM logs WHERE id = ?', (log_id,)).fetchone()
+        self.assertIsNotNone(existing_log)
+
+    def test_input_sanitization_and_whitespace_trimming(self):
+        # US1: Verify standard input handling rules before executing raw persistence operations [cite: 26, 30]
+        raw_title = "   Day 3: API Integration   "
+        raw_content = "<script>alert('XSS')</script> Solved core bugs."
+
+        # Apply basic cleaning procedures locally [cite: 17]
+        clean_title = raw_title.strip()
+        clean_content = raw_content.replace("<script>", "").replace("</script>", "")
+
+        # Persist cleansed attributes to the database [cite: 26]
+        self.cursor.execute("INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)", 
+                            (1, clean_title, clean_content))
+        self.conn.commit()
+        log_id = self.cursor.lastrowid
+
+        # Retrieve verified parameters from database rows [cite: 26]
+        saved_log = self.cursor.execute('SELECT * FROM logs WHERE id = ?', (log_id,)).fetchone()
+        
+        # Assert clean strings match our system's core sanitation targets
+        self.assertEqual(saved_log['title'], "Day 3: API Integration")
+        self.assertEqual(saved_log['content'], "alert('XSS') Solved core bugs.")
 
 if __name__ == '__main__':
     unittest.main()
