@@ -16,10 +16,16 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+import os
+
+# Veritabanının tam dosya yolunu otomatik hesapla
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'internship.db')
+
 # Veritabanı bağlantı yardımcısı
 def get_db_connection():
-    conn = sqlite3.connect('internship.db')
-    conn.row_factory = sqlite3.Row # Verilere sözlük gibi erişmemizi sağlar
+    conn = sqlite3.connect(DB_PATH)  # Artık sabit isim değil, tam yol (DB_PATH) kullanıyoruz
+    conn.row_factory = sqlite3.Row
     return conn
 
 @app.route('/')
