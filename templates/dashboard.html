@@ -96,14 +96,27 @@
             display: inline-block;
         }
 
-        /* Micro management inline delete option */
-        .btn-delete {
-            color: rgba(181, 79, 142, 0.6);
+        /* Action Buttons Layout */
+        .btn-action {
             background: none;
             border: none;
-            padding: 0 5px;
+            padding: 0 8px;
             cursor: pointer;
             transition: color 0.2s, transform 0.2s;
+            font-size: 1.1rem;
+        }
+        
+        .btn-edit-link {
+            color: #4ea8de;
+            text-decoration: none;
+        }
+        .btn-edit-link:hover {
+            color: #0077b6;
+            transform: scale(1.15);
+        }
+
+        .btn-delete {
+            color: rgba(181, 79, 142, 0.6);
         }
         .btn-delete:hover { 
             color: #dc3545; 
@@ -195,11 +208,16 @@
                         <h5 class="fw-bold mb-0" style="color: #444;">{{ log['title'] }}</h5>
                         <small class="text-muted d-block mt-1"><i class="far fa-calendar-alt me-1"></i> {{ log['created_at'] }}</small>
                     </div>
-                    <form action="/delete/{{ log['id'] }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this log entry?')">
-                        <button type="submit" class="btn-delete" title="Delete Log">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </form>
+                    <div class="d-flex align-items-center">
+                        <a href="/edit/{{ log['id'] }}" class="btn-action btn-edit-link me-2" title="Edit Log">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="/delete/{{ log['id'] }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this log entry?')" class="m-0">
+                            <button type="submit" class="btn-action btn-delete" title="Delete Log">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 <hr style="border-color: rgba(232, 151, 200, 0.15); margin: 10px 0;">
                 <p class="text-secondary small mt-2 mb-0" style="white-space: pre-line; line-height: 1.6;">{{ log['content'] }}</p>
