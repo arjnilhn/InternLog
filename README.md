@@ -20,21 +20,26 @@ A secure, multi-user web application designed for students to document, track, a
    git clone <your-repository-url>
    cd InternLog
 2. Initialize and trigger the virtual environment: 
+   ```bash
    python -m venv venv
 .\venv\Scripts\activate
 
 3. Install required application dependencies:
+   ```bash
    pip install -r requirements.txt
 
 4. Build schema properties and initialize local tables:
+   ```bash
    python create_db.py
 
 5. Run the development deployment server:
+   ```bash
    python app.py
   
   Open http://127.0.0.1:5000 inside your preferred standard browser.
  
  🧪 Unit Testing
 Validate the internal business logic (data boundaries, verification flows, and metric calculations) using the embedded suite:
-
-python -m unittest tests.py 
+  ```bash
+    python -m unittest tests.py
+    
