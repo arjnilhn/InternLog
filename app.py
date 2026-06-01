@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, session, url_for
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, session, url_for, flash # flash 
+from datetime import datetime
+
 
 
 app = Flask(__name__)
@@ -94,16 +96,20 @@ def create_log():
             return "Title and Content are required!"
             
         conn = get_db_connection()
-        conn.execute('INSERT INTO logs (user_id, title, content) VALUES (?, ?, ?)',
-                     (session['user_id'], title, content))
+        
+        # Şu anki Türkiye saatini YYYY-MM-DD HH:MM:SS formatında alıyoruz
+        turkey_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        conn.execute('INSERT INTO logs (user_id, title, content, created_at) VALUES (?, ?, ?, ?)',
+                     (session['user_id'], title, content, turkey_now))
         conn.commit()
         conn.close()
-            # create
+        
+        # create
         flash('New internship log added!', 'success')
        
         return redirect(url_for('dashboard')) 
     
-        
     return render_template('create_log.html')
 
 @app.route('/delete/<int:log_id>', methods=['POST'])

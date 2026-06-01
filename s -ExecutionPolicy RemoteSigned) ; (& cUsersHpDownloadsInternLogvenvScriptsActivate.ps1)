@@ -1,0 +1,107 @@
+[33mcommit 50ac44168620a3063a9d16a9a1c31d740180a4f0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 22:34:18 2026 +0300
+
+    [US4][UI] Refactor: Implement edit log trigger on dashboard and complete responsive soft theme synchronization across all forms
+
+[33mcommit ba9e6bcd748414082ee8d1aca2bbc8f36f117a61[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 22:12:55 2026 +0300
+
+    [UI] Refactor: Redesign template layouts with a clean, cohesive soft theme and fix profile field bindings
+
+[33mcommit 8d1665f536bada1686cbc7c9ce7ad5372b96b560[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 21:24:59 2026 +0300
+
+    [Docs] Update: Comprehensive project documentation in README.md
+
+[33mcommit b7134d146e7c12b43743797205b6ddf0039eef76[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 21:19:35 2026 +0300
+
+    [Docs] Update: Comprehensive project documentation in README.md
+
+[33mcommit c7b0965c5bb87e8f092b94115fb430b0b5225822[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 21:08:25 2026 +0300
+
+    [Fix] Core: Use absolute path for database connection to resolve deployment issues
+
+[33mcommit ac3f1d8f10ee58fd4ad92d38ff521f1acca22f6b[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 20:50:31 2026 +0300
+
+    [US1][US4] Test: Refactor unit test codebase for strict business logic validation and code quality standards
+
+[33mcommit a3ac259d06d2450dba1313763a76d63df712b55a[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Mon Jun 1 20:41:48 2026 +0300
+
+    [US2][US3] Test: Implement basic unit tests for multi-user data isolation and log counting metrics
+
+[33mcommit 0a14305ba1d14e4a055e080f8a396bd494dd3c38[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Sun May 17 11:34:20 2026 +0300
+
+    UI: Modernize create_log.html page to match the new minimalist dashboard design language
+
+[33mcommit 2aaee6521b3c4d5b54098bc16cb271efafd47730[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Sat May 16 00:17:49 2026 +0300
+
+    UI: Complete redesign of Dashboard with minimalist status panel, improved search, and separated Profile/Settings logic
+
+[33mcommit a2a0af6cd947cf89d4172b1d01090d950d0ae06a[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Fri May 15 17:36:13 2026 +0300
+
+    Add requirements for deployment
+
+[33mcommit cdad9652bbea91a9d5aaf0e904b9d1d6eb1a3854[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Fri May 15 17:08:27 2026 +0300
+
+    [Feat/Security] Added password update feature with current password verification
+
+[33mcommit 37b1305e4621dfafbde2e6e94614ddd492d8c4dc[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Fri May 15 16:58:01 2026 +0300
+
+    [Fix/UX] Improved flash message positioning and fixed logout alerts
+
+[33mcommit 38f538cdfe8a1d96010e85e32bff88e9a9407573[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Fri May 15 04:08:27 2026 +0300
+
+    [UI/UX] implemented professional Bootstrap design and custom CSS for better user experience
+
+[33mcommit da3491fcb713a1f1cf912b708dd485cee03c1afd[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Fri May 15 03:25:12 2026 +0300
+
+    [US4] implemented edit and delete functionality for logs
+
+[33mcommit 9676a539b529d0d71fc45d3045bf92cb2044b0bf[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Wed May 13 20:30:21 2026 +0300
+
+    [US1][US2] implemented log creation and dashboard listing
+
+[33mcommit 6d8ada76d1b81bc63820a25b6541f5291a41862e[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Wed May 13 19:57:19 2026 +0300
+
+    [Auth] implemented login logic and dashboard session control
+
+[33mcommit a8d8faee5dd07c553961b927ed709a2498f29c85[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Wed May 13 18:23:14 2026 +0300
+
+    [Auth] implemented app base and user registration logic
+
+[33mcommit 307d326a9ed7889510f70f09e827df36f567fcf7[m
+Author: Arjin İLhan <arjinnilhan@gmail.com>
+Date:   Wed May 13 17:37:56 2026 +0300
+
+    Initial commit: Project structure setup
